@@ -1,31 +1,30 @@
 from langchain_google_genai import ChatGoogleGenerativeAI
-from app.state import AgentState
+from app.state import TickerAnalysisState
 
-def sentiment_agent(state: AgentState) -> dict:
+def sentiment_agent(state: TickerAnalysisState) -> dict:
     """
-    Analyzes the sentiment of news headlines for each stock.
+    Analyzes sentiment for a single stock's news headlines.
     """
-    print("---ANALYZING SENTIMENT---")
+    ticker = state['ticker']
+    headlines = state['news']
+    print(f"---ANALYZING SENTIMENT FOR {ticker}---")
+
+    if not headlines:
+        return {"sentiment": "No headlines found to analyze."}
+    
     llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
-    sentiment_results = {}
+    prompt = f"""Analyze the overall sentiment of these news headlines for {ticker} and provide a brief, neutral summary.
 
-    for ticker, headlines in state['news'].items():
-        if not headlines:
-            sentiment_results[ticker] = "No headlines found to analyze."
-            continue
-        
-        prompt = f"""Analyze the overall sentiment of these news headlines for {ticker} and provide a brief, neutral summary of the sentiment (e.g., "Positive due to strong earnings report", "Negative on market fears", "Mixed following product announcement").
+    Headlines:
+    - {"\\n- ".join(headlines)}
 
-        Headlines:
-        - {"\\n- ".join(headlines)}
+    Sentiment Summary:"""
+    
+    try:
+        response = llm.invoke(prompt)
+        sentiment = response.content.strip()
+    except Exception as e:
+        print(f"Error analyzing sentiment for {ticker}: {e}")
+        sentiment = "Error during analysis."
 
-        Sentiment Summary:"""
-        
-        try:
-            response = llm.invoke(prompt)
-            sentiment_results[ticker] = response.content.strip()
-        except Exception as e:
-            print(f"Error analyzing sentiment for {ticker}: {e}")
-            sentiment_results[ticker] = "Error during analysis."
-
-    return {"sentiment": sentiment_results}
+    return {"sentiment": sentiment}
