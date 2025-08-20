@@ -1,0 +1,18 @@
+[project]
+name = "signal-aggregator"
+version = "0.1.0"
+description = "A multi-source signal aggregator for stocks using LangGraph and FastAPI."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "langgraph",
+    "yfinance",
+    "langchain-tavily",
+    "langchain-google-genai",
+    "pandas",
+    "langchain-community>=0.3.27",
+    "python-dotenv",
+    "langsmith" # For tracing and observability
+]
